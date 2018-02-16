@@ -127,8 +127,8 @@ def _httpresource(endpoint, method, properties):
         yield indent + '{indent}:body:'.format(**param, **locals())
         for line in param.get('description', '').splitlines():
             yield '{indent}{indent}{line}'.format(**locals())
-        for _property in param.get("schema").get("properties"):
-            yield '{indent}{indent}:property {name} {type}:'.format(**_property, name=_property, **locals())
+        for _property, value in param.get("schema").get("properties"):
+            yield indent*2 + ':property {name} {type}:'.format(type=value.get("type"), name=_property)
 
     yield ''
 
