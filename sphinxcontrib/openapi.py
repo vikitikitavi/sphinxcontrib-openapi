@@ -124,11 +124,11 @@ def _httpresource(endpoint, method, properties):
 
     # print request header params
     for param in filter(lambda p: p['in'] == 'body', parameters):
-        yield indent + ':Body:'.format(**param, **locals())
+        yield indent + "**Body:**"
         for line in param.get('description', '').splitlines():
             yield '{indent}{indent}{line}'.format(**locals())
         for _property, value in param.get("schema", {}).get("properties").items():
-            yield indent + '* **{name}** ({type})'.format(type=value.get("type"), name=_property)
+            yield indent + '* **{name}**: ({type})'.format(type=value.get("type"), name=_property)
 
     yield ''
 
