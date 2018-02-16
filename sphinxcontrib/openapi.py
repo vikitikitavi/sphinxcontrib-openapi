@@ -91,17 +91,15 @@ def _httpresource(endpoint, method, properties):
 
     # print request's route params
     for param in filter(lambda p: p['in'] == 'path', parameters):
-        if param.get("required"):
-            required = "``*``"
-        else:
-            required = ''
-        yield indent + ':param {type} {name} {req}:'.format(**param, req=required)
+        req = param_is_required(param.get("required"))
+        yield indent + ':param {type} {name} {req}:'.format(**param, req=req)
         for line in param.get('description', '').splitlines():
             yield '{indent}{indent}{line}'.format(**locals())
 
     # print request's query params
     for param in filter(lambda p: p['in'] == 'query', parameters):
-        yield indent + ':query {type} {name}:'.format(**param)
+        req = param_is_required(param.get("required"))
+        yield indent + ':query {type} {name}:'.format(**param, req=req)
         for line in param.get('description', '').splitlines():
             yield '{indent}{indent}{line}'.format(**locals())
 
@@ -124,7 +122,23 @@ def _httpresource(endpoint, method, properties):
             for line in header['description'].splitlines():
                 yield '{indent}{indent}{line}'.format(**locals())
 
+    # print request header params
+    for param in filter(lambda p: p['in'] == 'body', parameters):
+        yield indent + '{indent}:body:'.format(**param, **locals())
+        for line in param.get('description', '').splitlines():
+            yield '{indent}{indent}{line}'.format(**locals(), **locals())
+        for _property in param.get("schema").get("properties"):
+            yield '{indent}{indent}:property {name} {type}:'.format(**_property, name=_property)
+
     yield ''
+
+
+def param_is_required(required):
+    if required:
+        result = "``*``"
+    else:
+        result = ''
+    return result
 
 
 def _normalize_spec(spec, **options):
