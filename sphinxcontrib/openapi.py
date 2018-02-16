@@ -91,7 +91,10 @@ def _httpresource(endpoint, method, properties):
 
     # print request's route params
     for param in filter(lambda p: p['in'] == 'path', parameters):
-        yield indent + ':param {type} {name} {required}:'.format(**param)
+        if param.get(required):
+            required = "``*``"
+        else required = ''
+        yield indent + ':param {type} {name} {required}:'.format(**param, required=required)
         for line in param.get('description', '').splitlines():
             yield '{indent}{indent}{line}'.format(**locals())
 
