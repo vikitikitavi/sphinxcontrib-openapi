@@ -95,7 +95,7 @@ def _httpresource(endpoint, method, properties):
             required = "``*``"
         else:
             required = ''
-        yield indent + ':param {type} {name} {required}:'.format(**param, required=required)
+        yield indent + ':param {type} {name} {req}:'.format(**param, req=required)
         for line in param.get('description', '').splitlines():
             yield '{indent}{indent}{line}'.format(**locals())
 
