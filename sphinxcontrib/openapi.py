@@ -90,18 +90,22 @@ def _httpresource(endpoint, method, properties):
         yield ''
 
     # print request's route params
-    for param in filter(lambda p: p['in'] == 'path', parameters):
-        req = param_is_required(param.get("required"))
-        yield indent + ':param {type} {name} {req}:'.format(**param, req=req)
-        for line in param.get('description', '').splitlines():
-            yield '{indent}{indent}{line}'.format(**locals())
+    if filter(lambda p: p['in'] == 'path', parameters):
+        yield '**Parameters:**'
+        for param in filter(lambda p: p['in'] == 'path', parameters):
+            req = param_is_required(param.get("required"))
+            yield '* **{name}** {req}: ({type})'.format(**param, req=req)
+            for line in param.get('description', '').splitlines():
+                yield '{indent}{line}'.format(**locals())
 
     # print request's query params
-    for param in filter(lambda p: p['in'] == 'query', parameters):
-        req = param_is_required(param.get("required"))
-        yield indent + ':query {type} {name}:'.format(**param, req=req)
-        for line in param.get('description', '').splitlines():
-            yield '{indent}{indent}{line}'.format(**locals())
+    if filter(lambda p: p['in'] == 'query', parameters):
+        yield '**Query:**'
+        for param in filter(lambda p: p['in'] == 'query', parameters):
+            req = param_is_required(param.get("required"))
+            yield '* **{name}** {req}: ({type})'.format(**param, req=req)
+            for line in param.get('description', '').splitlines():
+                yield '{indent}{line}'.format(**locals())
 
     # print response status codes
     for status, response in responses.items():
@@ -128,13 +132,10 @@ def _httpresource(endpoint, method, properties):
         for line in param.get('description', '').splitlines():
             yield '{indent}{line}'.format(**locals())
         yield ''
-        yield '.. code-block:: json'
-        yield ''
-        yield indent + '{'
         for _property, value in param.get("schema", {}).get("properties").items():
-            yield indent + '{name}: *{type}*,'.format(type=value.get("type"), name=_property)
-        yield indent + '}'
-        yield ''
+            yield '* {name} (*{type}*)'.format(type=value.get("type"), name=_property)
+            for line in value.get('description', '').splitlines():
+                yield '{indent}{line}'.format(**locals())
 
     yield ''
 
