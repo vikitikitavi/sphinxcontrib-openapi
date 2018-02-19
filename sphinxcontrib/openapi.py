@@ -75,18 +75,20 @@ def _httpresource(endpoint, method, properties):
     responses = properties['responses']
     indent = '   '
 
-    yield '.. http:{0}:: {1}'.format(method, endpoint)
+    api = '{0} {1}'.format(method, endpoint)
+    yield api
+    yield '*'*len(api)
     yield '   :synopsis: {0}'.format(properties.get('summary', 'null'))
     yield ''
 
     if 'summary' in properties:
         for line in properties['summary'].splitlines():
-            yield '{indent}**{line}**'.format(**locals())
+            yield '**{line}**'.format(**locals())
         yield ''
 
     if 'description' in properties:
         for line in properties['description'].splitlines():
-            yield '{indent}{line}'.format(**locals())
+            yield '{line}'.format(**locals())
         yield ''
 
     # print request's route params
@@ -95,9 +97,10 @@ def _httpresource(endpoint, method, properties):
         yield ''
         for param in filter(lambda p: p['in'] == 'path', parameters):
             req = param_is_required(param.get("required"))
-            yield '* **{name}** {req} : ({type})'.format(**param, req=req)
+            yield '* {name} {req} : (*{type}*)'.format(**param, req=req)
             for line in param.get('description', '').splitlines():
                 yield '{indent}{line}'.format(**locals())
+            yield ''
 
     # print request's query params
     if filter(lambda p: p['in'] == 'query', parameters):
@@ -105,9 +108,10 @@ def _httpresource(endpoint, method, properties):
         yield ''
         for param in filter(lambda p: p['in'] == 'query', parameters):
             req = param_is_required(param.get("required"))
-            yield '* **{name}** {req} : ({type})'.format(**param, req=req)
+            yield '* {name} {req} : (*{type}*)'.format(**param, req=req)
             for line in param.get('description', '').splitlines():
                 yield '{indent}{line}'.format(**locals())
+            yield ''
 
     # print response status codes
     for status, response in responses.items():
@@ -138,6 +142,7 @@ def _httpresource(endpoint, method, properties):
             yield '* {name} (*{type}*)'.format(type=value.get("type"), name=_property)
             for line in value.get('description', '').splitlines():
                 yield '{indent}{line}'.format(**locals())
+            yield ''
 
     yield ''
 
