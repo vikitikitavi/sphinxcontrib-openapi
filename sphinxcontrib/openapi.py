@@ -126,12 +126,14 @@ def _httpresource(endpoint, method, properties):
     for param in filter(lambda p: p['in'] == 'body', parameters):
         yield '**Body:**'
         for line in param.get('description', '').splitlines():
-            yield '{indent}{indent}{line}'.format(**locals())
+            yield '{indent}{line}'.format(**locals())
         yield ''
         yield '.. code-block: json'
         yield ''
+        yield indent + '{'
         for _property, value in param.get("schema", {}).get("properties").items():
             yield indent + '{name}: *{type}*,'.format(type=value.get("type"), name=_property)
+        yield indent + '}'
         yield ''
 
     yield ''
