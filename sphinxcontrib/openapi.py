@@ -92,18 +92,20 @@ def _httpresource(endpoint, method, properties):
     # print request's route params
     if filter(lambda p: p['in'] == 'path', parameters):
         yield '**Parameters:**'
+        yield ''
         for param in filter(lambda p: p['in'] == 'path', parameters):
             req = param_is_required(param.get("required"))
-            yield '* **{name}** {req}: ({type})'.format(**param, req=req)
+            yield '* **{name}** {req} : ({type})'.format(**param, req=req)
             for line in param.get('description', '').splitlines():
                 yield '{indent}{line}'.format(**locals())
 
     # print request's query params
     if filter(lambda p: p['in'] == 'query', parameters):
         yield '**Query:**'
+        yield ''
         for param in filter(lambda p: p['in'] == 'query', parameters):
             req = param_is_required(param.get("required"))
-            yield '* **{name}** {req}: ({type})'.format(**param, req=req)
+            yield '* **{name}** {req} : ({type})'.format(**param, req=req)
             for line in param.get('description', '').splitlines():
                 yield '{indent}{line}'.format(**locals())
 
