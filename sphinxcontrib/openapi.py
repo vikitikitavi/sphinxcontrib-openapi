@@ -78,13 +78,13 @@ def _httpresource(endpoint, method, properties):
     api = '{0} {1}'.format(method, endpoint)
     yield api
     yield '*'*len(api)
+    yield ''
     yield '   :synopsis: {0}'.format(properties.get('summary', 'null'))
     yield ''
 
     if 'summary' in properties:
         for line in properties['summary'].splitlines():
             yield '**{line}**'.format(**locals())
-        yield ''
 
     if 'description' in properties:
         for line in properties['description'].splitlines():
@@ -92,7 +92,7 @@ def _httpresource(endpoint, method, properties):
         yield ''
 
     # print request's route params
-    if filter(lambda p: p['in'] == 'path', parameters):
+    if list(filter(lambda p: p['in'] == 'path', parameters)):
         yield '**Parameters:**'
         yield ''
         for param in filter(lambda p: p['in'] == 'path', parameters):
@@ -103,7 +103,7 @@ def _httpresource(endpoint, method, properties):
             yield ''
 
     # print request's query params
-    if filter(lambda p: p['in'] == 'query', parameters):
+    if list(filter(lambda p: p['in'] == 'query', parameters)):
         yield '**Query:**'
         yield ''
         for param in filter(lambda p: p['in'] == 'query', parameters):
