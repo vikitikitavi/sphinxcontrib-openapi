@@ -75,7 +75,7 @@ def _httpresource(endpoint, method, properties):
     responses = properties['responses']
     indent = '   '
 
-    api = '.. http:{0}:: {1}'.format(method, endpoint)
+    api = "{0} {1}".format(method, endpoint)
     yield api
     yield '*'*len(api)
     yield ''
@@ -144,13 +144,17 @@ def _httpresource(endpoint, method, properties):
 
     # print request header params
     for param in filter(lambda p: p['in'] == 'body', parameters):
+        description = ''
+        for line in param.get('description', '').splitlines():
+            description += '{line}'.format(**locals())
         yield '**Body:**'
+        yield description
         for line in param.get('description', '').splitlines():
             yield '{indent}{line}'.format(**locals())
         yield ''
         for _property, value in param.get("schema", {}).get("properties").items():
             description = ''
-            for line in param.get('description', '').splitlines():
+            for line in value.get('description', '').splitlines():
                 description += '{line}'.format(**locals())
             yield '* {name} (*{type}*) - {desc}'.format(type=value.get("type"), name=_property, desc=description)
         yield ''
