@@ -95,10 +95,10 @@ def _httpresource(endpoint, method, properties):
         yield ''
         for param in filter(lambda p: p['in'] == 'path', parameters):
             req = param_is_required(param.get("required"))
-            yield '* {name} {req} : (*{type}*)'.format(**param, req=req)
+            description = ''
             for line in param.get('description', '').splitlines():
-                yield '{indent}{line}'.format(**locals())
-            yield ''
+                description += '{line}'.format(**locals())
+            yield '* {name} {req} (*{type}*) - {desc}'.format(**param, req=req, desc=description)
         yield ''
 
     # print request's query params
@@ -107,10 +107,10 @@ def _httpresource(endpoint, method, properties):
         yield ''
         for param in filter(lambda p: p['in'] == 'query', parameters):
             req = param_is_required(param.get("required"))
-            yield '* {name} {req} : (*{type}*)'.format(**param, req=req)
+            description = ''
             for line in param.get('description', '').splitlines():
-                yield '{indent}{line}'.format(**locals())
-            yield ''
+                description += '{line}'.format(**locals())
+            yield '* {name} {req} (*{type}*) - {desc}'.format(**param, req=req, desc=description)
         yield ''
 
     # print response status codes
@@ -118,10 +118,10 @@ def _httpresource(endpoint, method, properties):
         yield '**Status:**'
         yield ''
         for status, response in responses.items():
-            yield '* {status}:'.format(**locals())
+            description = ''
             for line in response['description'].splitlines():
-                yield '{indent}{line}'.format(**locals())
-            yield ''
+                description += '{line}'.format(**locals())
+            yield '* {status} - {description}'.format(**locals())
         yield ''
 
     # print request header params
@@ -129,10 +129,10 @@ def _httpresource(endpoint, method, properties):
         yield '**Header:**'
         yield ''
         for param in filter(lambda p: p['in'] == 'header', parameters):
-            yield indent + '* {name}:'.format(**param)
+            description = ''
             for line in param.get('description', '').splitlines():
-                yield '{indent}{line}'.format(**locals())
-            yield ''
+                description += '{line}'.format(**locals())
+            yield indent + '* {name} - {desc}'.format(**param, desc=description)
         yield ''
 
     # print response headers
@@ -149,10 +149,10 @@ def _httpresource(endpoint, method, properties):
             yield '{indent}{line}'.format(**locals())
         yield ''
         for _property, value in param.get("schema", {}).get("properties").items():
-            yield '* {name} (*{type}*)'.format(type=value.get("type"), name=_property)
-            for line in value.get('description', '').splitlines():
-                yield '{indent}{line}'.format(**locals())
-            yield ''
+            description = ''
+            for line in param.get('description', '').splitlines():
+                description += '{line}'.format(**locals())
+            yield '* {name} (*{type}*) - {desc}'.format(type=value.get("type"), name=_property, desc=description)
         yield ''
 
     yield ''
