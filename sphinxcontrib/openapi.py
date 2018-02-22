@@ -76,7 +76,8 @@ def _httpresource(endpoint, method, properties):
     indent = '   '
 
     api = "{0} {1}".format(method, endpoint)
-    api = "{" + api + "}"
+    api = api.replace('{', '{{')
+    api = api.replace('}', '}}')
     yield api
     yield '*'*len(api)
     yield ''
