@@ -154,6 +154,14 @@ def _httpresource(endpoint, method, properties):
                 description += '{line}'.format(**locals())
             yield '* {name} (*{type}*) - {desc}'.format(type=value.get("type"), name=_property, desc=description)
         yield ''
+        yield 'Body example'
+        yield '.. code-block:: json'
+        yield ''
+        yield indent + '{'
+        for _property, value in param.get("schema", {}).get("example").items():
+            yield indent*2 + _property + str(value)
+        yield indent + '}'
+        yield ''
 
     yield ''
 
