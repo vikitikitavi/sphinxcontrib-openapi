@@ -152,7 +152,9 @@ def _httpresource(endpoint, method, properties):
             description = ''
             for line in value.get('description', '').splitlines():
                 description += '{line}'.format(**locals())
-            _range = "Range: (" + str(value.get('minimum', '-')) + ', ' + str(value.get('maximum', '-')) + ")."
+            _range = ''
+            if value.get("type") == 'integer':
+                _range = "Range: (" + str(value.get('minimum', '-')) + ', ' + str(value.get('maximum', '-')) + ")."
             yield '* {name} (*{type}*) - {desc} {range}'.format(
                 type=value.get("type"),
                 name=_property,
