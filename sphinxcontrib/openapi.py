@@ -162,9 +162,7 @@ def _httpresource(endpoint, method, properties):
                 range=_range)
         yield ''
         if param.get("schema", {}).get("example", {}):
-            yield 'Body example'
-            yield ''
-            yield '.. code-block:: json'
+            yield 'Body example ::'
             yield ''
             yield indent + '{'
             for _property, value in param.get("schema", {}).get("example", {}).items():
