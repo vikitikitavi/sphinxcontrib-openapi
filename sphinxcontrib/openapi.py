@@ -160,7 +160,7 @@ def _httpresource(endpoint, method, properties):
             yield ''
             yield indent + '{'
             for _property, value in param.get("schema", {}).get("example", {}).items():
-                yield indent*2 + _property + str(value)
+                yield indent*2 + str(_property) + str(value)
             yield indent + '}'
             yield ''
         yield ''
