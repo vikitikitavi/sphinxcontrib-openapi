@@ -210,7 +210,7 @@ def _httpresource(endpoint, method, properties):
         for line in iter(itertools.chain(_create_partition("Body"))):
             yield line
         for _property, value in param.get("schema", {}).get("properties").items():
-            description = _collect_description(param.get('description', ''))
+            description = _collect_description(value.get('description', ''))
             _range = ''
             if value.get("type") == 'integer':
                 _range = "Range: (" + str(value.get('minimum', '-')) + ', ' + str(value.get('maximum', '-')) + ")."
