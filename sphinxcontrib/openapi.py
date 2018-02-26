@@ -188,17 +188,21 @@ def _httpresource(endpoint, method, properties):
     if path_parameters:
         for line in iter(itertools.chain(_create_partition("Path parameters"))):
             yield line
-        _print_parameters(path_parameters)
+        for line in iter(itertools.chain(_print_parameters(path_parameters))):
+            yield line
 
     # print request's query params
     query_parameters = list(filter(lambda p: p['in'] == 'query', parameters))
     if query_parameters:
-        _create_partition("Query parameters")
-        _print_parameters(query_parameters)
+        for line in iter(itertools.chain(_create_partition("Query parameters"))):
+            yield line
+        for line in iter(itertools.chain(_print_parameters(query_parameters))):
+            yield line
 
     # print request body params
     for param in filter(lambda p: p['in'] == 'body', parameters):
-        _create_partition("Body")
+        for line in iter(itertools.chain(_create_partition("Body"))):
+            yield line
         for _property, value in param.get("schema", {}).get("properties").items():
             description = _collect_description(param.get('description', ''))
             _range = ''
@@ -215,7 +219,8 @@ def _httpresource(endpoint, method, properties):
 
     # print response status codes
     if responses.items():
-        _create_partition("Status codes")
+        for line in iter(itertools.chain(_create_partition("Status code"))):
+            yield line
         for status, response in responses.items():
             description = _collect_description(response.get('description', ''))
             yield '* {status} - {description}'.format(**locals())
