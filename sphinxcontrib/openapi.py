@@ -70,114 +70,34 @@ def _resolve_refs(uri, spec):
     return _do_resolve(spec)
 
 
-def _httpresource(endpoint, method, properties):
-    parameters = properties.get('parameters', [])
-    responses = properties['responses']
-    indent = '   '
+def _collect_description(description):
+    """Form the line from description"""
+    result = ''
+    for line in description.splitlines():
+        result += '{line}'.format(**locals())
+    return result
 
-    api = "{0} {1}".format(method, endpoint)
-    api = api.replace('{', '{{')
-    api = api.replace('}', '}}')
-    yield api
-    yield '*'*len(api)
+
+def _line_separatore():
     yield ''
 
-    if 'summary' in properties:
-        for line in properties['summary'].splitlines():
-            yield '{line}'.format(**locals())
 
-    if 'description' in properties:
-        for line in properties['description'].splitlines():
-            yield '{line}'.format(**locals())
-        yield ''
+def _create_partition(partition_name):
+    """Create bold partition line"""
+    yield '**{partition_name} :**'.format(**locals())
+    _line_separatore()
 
-    # print request's route params
-    if list(filter(lambda p: p['in'] == 'path', parameters)):
-        yield '**Parameters:**'
-        yield ''
-        for param in filter(lambda p: p['in'] == 'path', parameters):
-            req = param_is_required(param.get("required"))
-            description = ''
-            for line in param.get('description', '').splitlines():
-                description += '{line}'.format(**locals())
-            yield '* {name} {req} (*{type}*) - {desc}'.format(**param, req=req, desc=description)
-        yield ''
 
-    # print request's query params
-    if list(filter(lambda p: p['in'] == 'query', parameters)):
-        yield '**Query:**'
-        yield ''
-        for param in filter(lambda p: p['in'] == 'query', parameters):
-            req = param_is_required(param.get("required"))
-            description = ''
-            for line in param.get('description', '').splitlines():
-                description += '{line}'.format(**locals())
-            yield '* {name} {req} (*{type}*) - {desc}'.format(**param, req=req, desc=description)
-        yield ''
-
-    # print response status codes
-    if responses.items():
-        yield '**Status:**'
-        yield ''
-        for status, response in responses.items():
-            description = ''
-            for line in response['description'].splitlines():
-                description += '{line}'.format(**locals())
-            yield '* {status} - {description}'.format(**locals())
-        yield ''
-
-    # print request header params
-    if list(filter(lambda p: p['in'] == 'header', parameters)):
-        yield '**Header:**'
-        yield ''
-        for param in filter(lambda p: p['in'] == 'header', parameters):
-            description = ''
-            for line in param.get('description', '').splitlines():
-                description += '{line}'.format(**locals())
-            yield indent + '* {name} - {desc}'.format(**param, desc=description)
-        yield ''
-
-    # print response headers
-    for status, response in responses.items():
-        for headername, header in response.get('headers', {}).items():
-            yield indent + ':resheader {name}:'.format(name=headername)
-            for line in header['description'].splitlines():
-                yield '{indent}{indent}{line}'.format(**locals())
-
-    # print request header params
-    for param in filter(lambda p: p['in'] == 'body', parameters):
-        yield '**Body:**'
-        yield ''
-        for _property, value in param.get("schema", {}).get("properties").items():
-            description = ''
-            for line in value.get('description', '').splitlines():
-                description += '{line}'.format(**locals())
-            _range = ''
-            if value.get("type") == 'integer':
-                _range = "Range: (" + str(value.get('minimum', '-')) + ', ' + str(value.get('maximum', '-')) + ")."
-            yield '* {name} (*{type}*) - {desc} {range}'.format(
-                type=value.get("type"),
-                name=_property,
-                desc=description,
-                range=_range)
-        yield ''
-        if param.get("schema", {}).get("example", {}):
-            yield 'Body example ::'
-            yield ''
-            yield indent + '{'
-            for _property, value in param.get("schema", {}).get("example", {}).items():
-                if str(_property) == "True":
-                    _property = "on"
-                if value == "True":
-                    value = "true"
-                if isinstance(value, str):
-                    value = "\"" + value + "\""
-                yield indent*2 + str(_property) + ': ' + str(value) + ','
-            yield indent + '}'
-            yield ''
-        yield ''
-
-    yield ''
+def _print_parameters(parameters):
+    """Print parameters list with it's type and description"""
+    for param in parameters:
+        req = param_is_required(param.get("required"))
+        description = _collect_description(param.get('description', ''))
+        yield '* {name} {req} (*{type}*) - {desc}'.format(
+            **param,
+            req=req,
+            desc=description)
+    _line_separatore()
 
 
 def param_is_required(required):
@@ -186,6 +106,146 @@ def param_is_required(required):
     else:
         result = ''
     return result
+
+
+def _create_value_example(value):
+    if isinstance(value, str):
+        return "\"" + value + "\""
+    return str(value)
+
+
+def _create_object_schema_example(example, indent_number=1):
+    """Print json example"""
+    indent = '   '
+    yield indent * indent_number + '{'
+
+    for key, value in example.items():
+        if isinstance(value, dict):
+            yield indent * (indent_number + 1) + key + ": "
+            _create_object_schema_example(value, indent_number + 1)
+        elif isinstance(value, list):
+            yield indent * (indent_number + 1) + key + ": "
+            _create_list_schema_example(value, indent_number + 1)
+        else:
+            yield indent * (indent_number + 1) + key + ": " + _transform_value_example(value) + ','
+
+    if indent_number == 1:
+        yield indent * indent_number + '}'
+    else:
+        yield indent * indent_number + '},'
+
+
+def _create_list_schema_example(example, indent_number=1):
+    """Print list example"""
+    indent = '   '
+    yield indent * indent_number + '['
+
+    for value in example.items():
+        if isinstance(value, dict):
+            _create_object_schema_example(value, indent_number + 1)
+        elif isinstance(value, list):
+            _create_list_schema_example(value, indent_number + 1)
+        else:
+            yield indent * (indent_number + 1) + _transform_value_example(value) + ','
+
+    if indent_number == 1:
+        yield indent * indent_number + ']'
+    else:
+        yield indent * indent_number + '],'
+
+
+def _create_schema_example(example, example_title="Example"):
+    if not example:
+        return None
+    _line_separatore()
+    yield '{example_title} ::'.format(**locals())
+    _line_separatore()
+    if isinstance(example, dict):
+            _create_object_schema_example(example)
+    elif isinstance(example, list):
+        _create_list_schema_example(example)
+    _line_separatore()
+
+
+def _api_line(method, endpoint):
+    api = "{0} {1}".format(method, endpoint)
+    api = api.replace('{', '{{')
+    api = api.replace('}', '}}')
+    yield api
+    yield '*' * len(api)
+    _line_separatore()
+
+
+def _httpresource(endpoint, method, properties):
+    parameters = properties.get('parameters', [])
+    responses = properties['responses']
+    indent = '   '
+
+    _api_line(method, endpoint)
+
+    if 'summary' in properties:
+        for line in properties['summary'].splitlines():
+            yield '{line}'.format(**locals())
+
+    yield _collect_description(properties['description'])
+    _line_separatore()
+
+    # print request's route params
+    path_parameters = list(filter(lambda p: p['in'] == 'path', parameters))
+    if path_parameters:
+        _create_partition("Path parameters")
+        _print_parameters(path_parameters)
+
+    # print request's query params
+    query_parameters = list(filter(lambda p: p['in'] == 'query', parameters))
+    if query_parameters:
+        _create_partition("Query parameters")
+        _print_parameters(query_parameters)
+
+    # print request body params
+    for param in filter(lambda p: p['in'] == 'body', parameters):
+        _create_partition("Body")
+        for _property, value in param.get("schema", {}).get("properties").items():
+            description = _collect_description(param.get('description', ''))
+            _range = ''
+            if value.get("type") == 'integer':
+                _range = "Range: (" + str(value.get('minimum', '-')) + ', ' + str(value.get('maximum', '-')) + ")."
+            yield '* {name} (*{type}*) - {desc} {range}'.format(
+                type=value.get("type"),
+                name=_property,
+                desc=description,
+                range=_range)
+        _line_separatore()
+        example = param.get("schema", {}).get("example", {})
+        _create_schema_example(example)
+
+    # print response status codes
+    if responses.items():
+        _create_partition("Status codes")
+        for status, response in responses.items():
+            description = _collect_description(param.get('description', ''))
+            yield '* {status} - {description}'.format(**locals())
+            example = response.get("schema", {}).get("example", {})
+            _create_schema_example(example, "Response example")
+        _line_separatore()
+
+    # print request header params
+    if list(filter(lambda p: p['in'] == 'header', parameters)):
+        _create_partition("Request headers")
+        for param in filter(lambda p: p['in'] == 'header', parameters):
+            description = _collect_description(param.get('description', ''))
+            yield '* {name} - {desc}'.format(**param, desc=description)
+        _line_separatore()
+
+    # print response headers
+    for status, response in responses.items():
+        for headername, header in response.get('headers', {}).items():
+            yield indent + ':resheader {name}:'.format(name=headername)
+            for line in header['description'].splitlines():
+                yield '{indent}{indent}{line}'.format(**locals())
+    _line_separatore()
+
+    _line_separatore()
 
 
 def _normalize_spec(spec, **options):
