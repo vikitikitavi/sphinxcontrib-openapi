@@ -181,7 +181,7 @@ def _httpresource(endpoint, method, properties):
     responses = properties['responses']
     indent = '   '
 
-    _api_line(method, endpoint)
+    yield _api_line(method, endpoint)
 
     if 'summary' in properties:
         for line in properties['summary'].splitlines():
