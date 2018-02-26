@@ -84,7 +84,7 @@ def _line_separatore():
 
 def _create_partition(partition_name):
     """Create bold partition line"""
-    yield '**{partition_name} :**'.format(**locals())
+    yield '**{name} :**'.format(name=partition_name)
     _line_separatore()
 
 
