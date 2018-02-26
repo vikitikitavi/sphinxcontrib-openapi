@@ -78,14 +78,11 @@ def _collect_description(description):
     return result
 
 
-def _line_separatore():
-    yield ''
-
 
 def _create_partition(partition_name):
     """Create bold partition line"""
     yield '**{name} :**'.format(name=partition_name)
-    _line_separatore()
+    yield ''
 
 
 def _print_parameters(parameters):
@@ -97,7 +94,7 @@ def _print_parameters(parameters):
             **param,
             req=req,
             desc=description)
-    _line_separatore()
+    yield ''
 
 
 def param_is_required(required):
@@ -157,14 +154,14 @@ def _create_list_schema_example(example, indent_number=1):
 def _create_schema_example(example, example_title="Example"):
     if not example:
         return None
-    _line_separatore()
-    yield '{example_title} ::'.format(**locals())
-    _line_separatore()
+    yield ''
+    yield '{title} ::'.format(title=example_title)
+    yield ''
     if isinstance(example, dict):
             _create_object_schema_example(example)
     elif isinstance(example, list):
         _create_list_schema_example(example)
-    _line_separatore()
+    yield ''
 
 
 def _api_line(method, endpoint):
@@ -173,7 +170,7 @@ def _api_line(method, endpoint):
     api = api.replace('}', '}}')
     yield api
     yield '*' * len(api)
-    _line_separatore()
+    yield ''
 
 
 def _httpresource(endpoint, method, properties):
@@ -181,14 +178,14 @@ def _httpresource(endpoint, method, properties):
     responses = properties['responses']
     indent = '   '
 
-    yield _api_line(method, endpoint)
+    iter(itertools.chain(_api_line(method, endpoint)))
 
     if 'summary' in properties:
         for line in properties['summary'].splitlines():
             yield '{line}'.format(**locals())
 
     yield _collect_description(properties['description'])
-    _line_separatore()
+    yield ''
 
     # print request's route params
     path_parameters = list(filter(lambda p: p['in'] == 'path', parameters))
@@ -215,7 +212,7 @@ def _httpresource(endpoint, method, properties):
                 name=_property,
                 desc=description,
                 range=_range)
-        _line_separatore()
+        yield ''
         example = param.get("schema", {}).get("example", {})
         _create_schema_example(example)
 
@@ -227,7 +224,7 @@ def _httpresource(endpoint, method, properties):
             yield '* {status} - {description}'.format(**locals())
             example = response.get("schema", {}).get("example", {})
             _create_schema_example(example, "Response example")
-        _line_separatore()
+        yield ''
 
     # print request header params
     if list(filter(lambda p: p['in'] == 'header', parameters)):
@@ -235,7 +232,7 @@ def _httpresource(endpoint, method, properties):
         for param in filter(lambda p: p['in'] == 'header', parameters):
             description = _collect_description(param.get('description', ''))
             yield '* {name} - {desc}'.format(**param, desc=description)
-        _line_separatore()
+        yield ''
 
     # print response headers
     for status, response in responses.items():
@@ -243,9 +240,9 @@ def _httpresource(endpoint, method, properties):
             yield indent + ':resheader {name}:'.format(name=headername)
             for line in header['description'].splitlines():
                 yield '{indent}{indent}{line}'.format(**locals())
-    _line_separatore()
+    yield ''
 
-    _line_separatore()
+    yield ''
 
 
 def _normalize_spec(spec, **options):
