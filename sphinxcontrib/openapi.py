@@ -223,7 +223,7 @@ def _httpresource(endpoint, method, properties):
     if responses.items():
         _create_partition("Status codes")
         for status, response in responses.items():
-            description = _collect_description(param.get('description', ''))
+            description = _collect_description(response.get('description', ''))
             yield '* {status} - {description}'.format(**locals())
             example = response.get("schema", {}).get("example", {})
             _create_schema_example(example, "Response example")
