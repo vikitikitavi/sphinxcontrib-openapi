@@ -78,7 +78,6 @@ def _collect_description(description):
     return result
 
 
-
 def _create_partition(partition_name):
     """Create bold partition line"""
     yield '**{name} :**'.format(name=partition_name)
@@ -164,21 +163,18 @@ def _create_schema_example(example, example_title="Example"):
     yield ''
 
 
-def _api_line(method, endpoint):
-    api = "{0} {1}".format(method, endpoint)
-    api = api.replace('{', '{{')
-    api = api.replace('}', '}}')
-    yield api
-    yield '*' * len(api)
-    yield ''
-
 
 def _httpresource(endpoint, method, properties):
     parameters = properties.get('parameters', [])
     responses = properties['responses']
     indent = '   '
 
-    iter(itertools.chain(_api_line(method, endpoint)))
+    api = "{0} {1}".format(method, endpoint)
+    api = api.replace('{', '{{')
+    api = api.replace('}', '}}')
+    yield api
+    yield '*' * len(api)
+    yield ''
 
     if 'summary' in properties:
         for line in properties['summary'].splitlines():
@@ -190,7 +186,8 @@ def _httpresource(endpoint, method, properties):
     # print request's route params
     path_parameters = list(filter(lambda p: p['in'] == 'path', parameters))
     if path_parameters:
-        _create_partition("Path parameters")
+        for line in iter(itertools.chain(_create_partition("Path parameters"))):
+            yield line
         _print_parameters(path_parameters)
 
     # print request's query params
