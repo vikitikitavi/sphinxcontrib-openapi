@@ -166,6 +166,12 @@ def _httpresource(endpoint, method, properties):
             yield ''
             yield indent + '{'
             for _property, value in param.get("schema", {}).get("example", {}).items():
+                if str(_property) == "True":
+                    _property = "on"
+                if value == "True":
+                    value = "true"
+                if isinstance(value, str):
+                    value = "\"" + value + "\""
                 yield indent*2 + str(_property) + ': ' + str(value) + ','
             yield indent + '}'
             yield ''
