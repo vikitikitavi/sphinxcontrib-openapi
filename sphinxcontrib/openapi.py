@@ -117,15 +117,15 @@ def _create_object_schema_example(example, indent_number=1):
 
     for key, value in example.items():
         if isinstance(value, dict):
-            yield indent * (indent_number + 1) + key + ": "
+            yield indent * (indent_number + 1) + str(key) + ": "
             for line in iter(_create_object_schema_example(value, indent_number + 1)):
                 yield line
         elif isinstance(value, list):
-            yield indent * (indent_number + 1) + key + ": "
+            yield indent * (indent_number + 1) + str(key) + ": "
             for line in iter(_create_list_schema_example(value, indent_number + 1)):
                 yield line
         else:
-            yield indent * (indent_number + 1) + key + ": " + _create_value_example(value) + ','
+            yield indent * (indent_number + 1) + str(key) + ": " + _create_value_example(value) + ','
 
     if indent_number == 1:
         yield indent * indent_number + '}'
