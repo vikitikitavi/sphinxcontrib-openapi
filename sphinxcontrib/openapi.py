@@ -118,12 +118,14 @@ def _create_object_schema_example(example, indent_number=1):
     for key, value in example.items():
         if isinstance(value, dict):
             yield indent * (indent_number + 1) + key + ": "
-            _create_object_schema_example(value, indent_number + 1)
+            for line in iter(_create_object_schema_example(value, indent_number + 1)):
+                yield line
         elif isinstance(value, list):
             yield indent * (indent_number + 1) + key + ": "
-            _create_list_schema_example(value, indent_number + 1)
+            for line in iter(_create_list_schema_example(value, indent_number + 1)):
+                yield line
         else:
-            yield indent * (indent_number + 1) + key + ": " + _transform_value_example(value) + ','
+            yield indent * (indent_number + 1) + key + ": " + _create_value_example(value) + ','
 
     if indent_number == 1:
         yield indent * indent_number + '}'
@@ -138,11 +140,13 @@ def _create_list_schema_example(example, indent_number=1):
 
     for value in example.items():
         if isinstance(value, dict):
-            _create_object_schema_example(value, indent_number + 1)
+            for line in iter(_create_object_schema_example(value, indent_number + 1)):
+                yield line
         elif isinstance(value, list):
-            _create_list_schema_example(value, indent_number + 1)
+            for line in iter(_create_list_schema_example(value, indent_number + 1)):
+                yield line
         else:
-            yield indent * (indent_number + 1) + _transform_value_example(value) + ','
+            yield indent * (indent_number + 1) + _create_value_example(value) + ','
 
     if indent_number == 1:
         yield indent * indent_number + ']'
@@ -157,9 +161,11 @@ def _create_schema_example(example, example_title="Example"):
     yield '{title} ::'.format(title=example_title)
     yield ''
     if isinstance(example, dict):
-            _create_object_schema_example(example)
+        for line in iter(_create_object_schema_example(example)):
+            yield line
     elif isinstance(example, list):
-        _create_list_schema_example(example)
+        for line in iter(_create_list_schema_example(example)):
+            yield line
     yield ''
 
 
@@ -215,7 +221,8 @@ def _httpresource(endpoint, method, properties):
                 range=_range)
         yield ''
         example = param.get("schema", {}).get("example", {})
-        _create_schema_example(example)
+        for line in iter(_create_schema_example(example)):
+            yield line
 
     # print response status codes
     if responses.items():
@@ -225,7 +232,8 @@ def _httpresource(endpoint, method, properties):
             description = _collect_description(response.get('description', ''))
             yield '* {status} - {description}'.format(**locals())
             example = response.get("schema", {}).get("example", {})
-            _create_schema_example(example, "Response example")
+            for line in iter(_create_schema_example(example, "Response example")):
+                yield line
         yield ''
 
     # print request header params
