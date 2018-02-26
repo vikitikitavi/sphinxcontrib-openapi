@@ -138,7 +138,7 @@ def _create_list_schema_example(example, indent_number=1):
     indent = '   '
     yield indent * indent_number + '['
 
-    for value in example.items():
+    for value in example:
         if isinstance(value, dict):
             for line in iter(_create_object_schema_example(value, indent_number + 1)):
                 yield line
