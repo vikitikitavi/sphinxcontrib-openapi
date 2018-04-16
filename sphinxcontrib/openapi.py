@@ -110,6 +110,10 @@ def _create_value_example(value):
     return str(value)
 
 
+def _enclose_in_quotes(value):
+    return "\"{}\"".format(str(value))
+
+
 def _create_object_schema_example(example, indent_number=1):
     """Print json example"""
     indent = '   '
@@ -117,15 +121,15 @@ def _create_object_schema_example(example, indent_number=1):
 
     for key, value in example.items():
         if isinstance(value, dict):
-            yield indent * (indent_number + 1) + str(key) + ": "
+            yield indent * (indent_number + 1) + _enclose_in_quotes(key) + ": "
             for line in iter(_create_object_schema_example(value, indent_number + 1)):
                 yield line
         elif isinstance(value, list):
-            yield indent * (indent_number + 1) + str(key) + ": "
+            yield indent * (indent_number + 1) + _enclose_in_quotes(key) + ": "
             for line in iter(_create_list_schema_example(value, indent_number + 1)):
                 yield line
         else:
-            yield indent * (indent_number + 1) + str(key) + ": " + _create_value_example(value) + ','
+            yield indent * (indent_number + 1) + _enclose_in_quotes(key) + ": " + _create_value_example(value) + ','
 
     if indent_number == 1:
         yield indent * indent_number + '}'
@@ -169,7 +173,6 @@ def _create_schema_example(example, example_title="Example"):
     yield ''
 
 
-
 def _httpresource(endpoint, method, properties):
     parameters = properties.get('parameters', [])
     responses = properties['responses']
@@ -186,7 +189,7 @@ def _httpresource(endpoint, method, properties):
         for line in properties['summary'].splitlines():
             yield '{line}'.format(**locals())
 
-    yield _collect_description(properties['description'])
+    yield _collect_description(properties.get('description', ''))
     yield ''
 
     # print request's route params
