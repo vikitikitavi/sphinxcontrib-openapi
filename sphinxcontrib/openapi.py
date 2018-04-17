@@ -107,6 +107,8 @@ def param_is_required(required):
 def _create_value_example(value):
     if isinstance(value, str):
         return "\"" + value + "\""
+    if isinstance(value, bool):
+        return str(value).lower()
     return str(value)
 
 
