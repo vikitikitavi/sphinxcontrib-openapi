@@ -116,7 +116,7 @@ def _enclose_in_quotes(value):
     return "\"{}\"".format(str(value))
 
 
-def _create_object_schema_example(example, first_level_items, indent_number=1):
+def _create_object_schema_example(example, prv_first_level_items, first_level_items, indent_number=1):
     """Print json example"""
     indent = '   '
     yield indent * indent_number + '{'
@@ -126,12 +126,12 @@ def _create_object_schema_example(example, first_level_items, indent_number=1):
         if isinstance(value, dict):
             level_items = _count_first_level_items(value)
             yield indent * (indent_number + 1) + _enclose_in_quotes(key) + ": "
-            for line in iter(_create_object_schema_example(value, level_items, indent_number + 1)):
+            for line in iter(_create_object_schema_example(value, first_level_items, level_items, indent_number + 1)):
                 yield line
         elif isinstance(value, list):
             level_items = _count_first_level_items(value)
             yield indent * (indent_number + 1) + _enclose_in_quotes(key) + ": "
-            for line in iter(_create_list_schema_example(value, level_items, indent_number + 1)):
+            for line in iter(_create_list_schema_example(value, first_level_items, level_items, indent_number + 1)):
                 yield line
         else:
             line = indent * (indent_number + 1) + _enclose_in_quotes(key) + ": " + _create_value_example(value)
@@ -140,7 +140,7 @@ def _create_object_schema_example(example, first_level_items, indent_number=1):
             else:
                 yield line
 
-    if first_level_items == 0:
+    if prv_first_level_items == 0:
         yield indent * indent_number + '}'
     else:
         yield indent * indent_number + '},'
@@ -151,7 +151,7 @@ def _first_level_decrement(value):
         return value - 1
 
 
-def _create_list_schema_example(example, first_level_items, indent_number=1):
+def _create_list_schema_example(example, prv_first_level_items, first_level_items, indent_number=1):
     """Print list example"""
     indent = '   '
     yield indent * indent_number + '['
@@ -160,11 +160,11 @@ def _create_list_schema_example(example, first_level_items, indent_number=1):
         first_level_items = _first_level_decrement(first_level_items)
         if isinstance(value, dict):
             level_items = _count_first_level_items(value)
-            for line in iter(_create_object_schema_example(value, level_items, indent_number + 1)):
+            for line in iter(_create_object_schema_example(value, first_level_items, level_items, indent_number + 1)):
                 yield line
         elif isinstance(value, list):
             level_items = _count_first_level_items(value)
-            for line in iter(_create_list_schema_example(value, level_items, indent_number + 1)):
+            for line in iter(_create_list_schema_example(value, first_level_items, level_items, indent_number + 1)):
                 yield line
         else:
             line = indent * (indent_number + 1) + _create_value_example(value)
@@ -173,7 +173,7 @@ def _create_list_schema_example(example, first_level_items, indent_number=1):
             else:
                 yield line
 
-    if first_level_items == 0:
+    if prv_first_level_items == 0:
         yield indent * indent_number + ']'
     else:
         yield indent * indent_number + '],'
@@ -190,10 +190,10 @@ def _create_schema_example(example, example_title="Example"):
     yield '{title} ::'.format(title=example_title)
     yield ''
     if isinstance(example, dict):
-        for line in iter(_create_object_schema_example(example, _count_first_level_items(example))):
+        for line in iter(_create_object_schema_example(example, 0, _count_first_level_items(example))):
             yield line
     elif isinstance(example, list):
-        for line in iter(_create_list_schema_example(example, _count_first_level_items(examples))):
+        for line in iter(_create_list_schema_example(example, 0, _count_first_level_items(examples))):
             yield line
     yield ''
 
