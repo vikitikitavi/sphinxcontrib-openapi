@@ -217,6 +217,24 @@ def _httpresource(endpoint, method, properties):
     yield _collect_description(properties.get('description', ''))
     yield ''
 
+    # print request header params
+    header_parameters = list(filter(lambda p: p['in'] == 'header', parameters))
+    if header_parameters:
+        for line in iter(itertools.chain(_create_partition("Request headers"))):
+            yield line
+        for line in iter(itertools.chain(_print_parameters(header_parameters))):
+            yield line
+
+    # print response headers
+    for status, response in responses.items():
+        for headername, header in response.get('headers', {}).items():
+            yield indent + ':resheader {name}:'.format(name=headername)
+            for line in header['description'].splitlines():
+                yield '{indent}{indent}{line}'.format(**locals())
+    yield ''
+
+    yield ''
+
     # print request's route params
     path_parameters = list(filter(lambda p: p['in'] == 'path', parameters))
     if path_parameters:
@@ -264,23 +282,6 @@ def _httpresource(endpoint, method, properties):
                 yield line
         yield ''
 
-    # print request header params
-    if list(filter(lambda p: p['in'] == 'header', parameters)):
-        _create_partition("Request headers")
-        for param in filter(lambda p: p['in'] == 'header', parameters):
-            description = _collect_description(param.get('description', ''))
-            yield '* {name} - {desc}'.format(**param, desc=description)
-        yield ''
-
-    # print response headers
-    for status, response in responses.items():
-        for headername, header in response.get('headers', {}).items():
-            yield indent + ':resheader {name}:'.format(name=headername)
-            for line in header['description'].splitlines():
-                yield '{indent}{indent}{line}'.format(**locals())
-    yield ''
-
-    yield ''
 
 
 def _normalize_spec(spec, **options):
